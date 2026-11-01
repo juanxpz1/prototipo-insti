@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Canasta Campesina El Progreso</title>
+<meta name="description" content="Prototipo del servicio Canasta Campesina El Progreso: pedidos anticipados por WhatsApp y entrega semanal en Ocaña de productos de las familias de la vereda El Progreso.">
+<meta property="og:title" content="Canasta Campesina El Progreso">
+<meta property="og:description" content="Pedidos anticipados por WhatsApp y entrega semanal en Ocaña de productos frescos y caseros de la vereda El Progreso.">
+<meta name="theme-color" content="#2f5d34">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 18c26 8 36 30 30 50-6 18-54 18-60 0-6-20 4-42 30-50z' fill='%237a2e5c'/%3E%3Cpath d='M50 4v18' stroke='%232f5d34' stroke-width='8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap">
+<style>
+/* Layout: market-stall catalog grid with a pinned order slip; below it the weekly route, the label and the survey changes. */
+:root{
+  --bg:#f6f4ee; --surface:#ffffff; --surface-2:#eef1e6; --line:#d9dccd;
+  --fg:#1f2a1c; --muted:#5d6656;
+  --monte:#2f5d34; --monte-ink:#ffffff;
+  --cebolla:#7a2e5c; --cebolla-soft:#f3e4ee;
+  --sol:#e3a72f;
+  --ok:#2f7d4a;
+  --display:"Bitter",Georgia,serif;
+  --body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151a14; --surface:#1d241b; --surface-2:#242d22; --line:#364032;
+  --fg:#e9eee3; --muted:#a6b19d;
+  --monte:#7fbf7a; --monte-ink:#0f1a0e;
+  --cebolla:#e08cc0; --cebolla-soft:#3a2433;
+  --sol:#f0bf55; --ok:#7fd39a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151a14; --surface:#1d241b; --surface-2:#242d22; --line:#364032;
+  --fg:#e9eee3; --muted:#a6b19d;
+  --monte:#7fbf7a; --monte-ink:#0f1a0e;
+  --cebolla:#e08cc0; --cebolla-soft:#3a2433;
+  --sol:#f0bf55; --ok:#7fd39a; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+
+/* Top bar */
+.top{background:var(--monte);color:var(--monte-ink)}
+.top .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;justify-content:space-between;padding-block:10px;font-size:14px}
+.top b{font-weight:700}
+.deadline{display:flex;gap:8px;align-items:center}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--sol);flex:none}
+
+/* Hero */
+.hero .wrap{padding-block:30px 22px;display:grid;gap:10px}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--cebolla);font-weight:700}
+.hero h1{font-size:clamp(30px,5vw,48px);color:var(--fg)}
+.hero p{max-width:62ch;margin:0;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px}
+
+/* Main grid */
+.main .wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start;padding-block:8px 40px}
+@media (max-width:900px){.main .wrap{grid-template-columns:minmax(0,1fr)}}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head h2{font-size:24px}
+.sec-head span{font-size:14px;color:var(--muted)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 14px;font-size:14px}
+.filters button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.art{height:120px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center}
+.art svg{height:96px;width:auto}
+.card h3{font-size:18px}
+.meta{font-size:13px;color:var(--muted)}
+.contents{font-size:14px;margin:0;padding-left:18px;color:var(--fg)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.price{font-family:var(--display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.fam{font-size:12.5px;color:var(--cebolla);font-weight:700}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.stepper button{width:36px;height:36px;border:0;background:var(--surface-2);color:var(--fg);font-size:18px;font-weight:700}
+.stepper output{min-width:30px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.add{border:0;background:var(--monte);color:var(--monte-ink);border-radius:999px;padding:8px 16px;font-weight:700}
+
+/* Order slip */
+.slip{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+@media (max-width:900px){.slip{position:static}}
+.slip-head{background:var(--cebolla);color:#fff;padding:14px 16px}
+.slip-head h2{font-size:20px;color:#fff}
+.slip-head p{margin:2px 0 0;font-size:13px;opacity:.92}
+.slip-body{padding:14px 16px;display:grid;gap:12px}
+.lines{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.lines li{display:flex;justify-content:space-between;gap:10px;font-size:14px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.lines li span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.empty{font-size:14px;color:var(--muted);margin:0}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:6px}
+legend{font-weight:700;font-size:14px;margin-bottom:4px}
+.opt{display:flex;gap:8px;align-items:flex-start;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.opt input{margin-top:4px;accent-color:var(--monte)}
+.opt small{display:block;color:var(--muted);font-size:12.5px}
+label.f{display:grid;gap:4px;font-size:14px;font-weight:600}
+label.f input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--fg);padding-top:10px}
+.total b{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}
+.send{display:block;text-align:center;text-decoration:none;background:var(--ok);color:#fff;border-radius:12px;padding:12px;font-weight:700;border:0;width:100%}
+.send[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.msg{font-size:13px;background:var(--surface-2);border-radius:10px;padding:10px;white-space:pre-wrap;margin:0;max-height:180px;overflow:auto}
+.copy{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 10px;font-size:13px}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+
+.mobile-bar{display:none}
+@media (max-width:900px){
+  .mobile-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;justify-content:space-between;align-items:center;gap:10px;
+   background:var(--fg);color:var(--bg);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .mobile-bar a{color:var(--bg);font-weight:700}
+  body{padding-bottom:64px}
+}
+
+/* Route */
+.band{background:var(--surface-2);border-block:1px solid var(--line)}
+.band .wrap{padding-block:36px}
+.route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+@media (max-width:820px){.route{grid-template-columns:minmax(0,1fr)}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:6px;align-content:start}
+.step.now{border-color:var(--cebolla);box-shadow:0 0 0 2px var(--cebolla)}
+.day{font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--monte)}
+.now-tag{justify-self:start;font-size:12px;font-weight:700;background:var(--cebolla);color:#fff;border-radius:999px;padding:1px 9px}
+.who{justify-self:start;font-size:12.5px;font-weight:700;background:var(--cebolla-soft);color:var(--cebolla);border-radius:999px;padding:2px 10px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media (max-width:620px){.compare{grid-template-columns:minmax(0,1fr)}}
+.compare div{border-radius:12px;padding:14px;border:1px solid var(--line);background:var(--surface)}
+.compare h3{font-size:16px;margin-bottom:4px}
+.compare p{margin:0;font-size:14.5px}
+
+/* Label + survey */
+.two .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;padding-block:36px}
+@media (max-width:820px){.two .wrap{grid-template-columns:minmax(0,1fr)}}
+.label{margin-top:16px;max-width:360px;background:var(--surface);border:3px solid var(--monte);border-radius:14px;padding:18px;text-align:center;display:grid;gap:6px}
+.label .brand{font-size:12px;letter-spacing:.14em;font-weight:800;color:var(--monte)}
+.label .pname{font-family:var(--display);font-size:30px;font-weight:800;color:var(--cebolla)}
+.label hr{border:0;border-top:2px dashed var(--line);width:100%;margin:6px 0}
+.label .grid2{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;text-align:left;font-size:13px}
+.qr{width:72px;height:72px;background:conic-gradient(var(--fg) 25%,var(--surface) 0 50%,var(--fg) 0 75%,var(--surface) 0) 0 0/12px 12px;border:5px solid var(--fg)}
+.label select{font:inherit;font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.changes{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:10px}
+.changes li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:2px}
+.changes .stat{font-family:var(--display);font-weight:800;font-size:22px;color:var(--cebolla);font-variant-numeric:tabular-nums}
+.changes p{margin:0;font-size:14.5px}
+footer .wrap{padding-block:22px 30px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.card,.add{transition:transform .15s ease}.add:active{transform:scale(.96)}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <div><b>Canasta Campesina El Progreso</b> · Vereda El Progreso, Ocaña</div>
+  <div class="deadline"><span class="dot"></span><span id="deadline">Pedidos hasta el miércoles 6 p. m. · Entrega el sábado</span></div>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <span class="eyebrow">Del campo de Ocaña a tu casa, sin intermediarios</span>
+  <h1>Pide esta semana lo que las familias de El Progreso cosechan y preparan</h1>
+  <p>Haces tu pedido hasta el miércoles, las familias cosechan y transforman solo lo vendido, y el sábado llega todo en un solo viaje a Ocaña.</p>
+  <div class="chips"><span class="chip">Precios fijos cada lunes</span><span class="chip">Pago al recibir o Nequi</span><span class="chip">Cada frasco dice qué familia lo hizo</span></div>
+</div></header>
+
+<main class="main"><div class="wrap">
+  <section aria-labelledby="cat-h">
+    <div class="sec-head"><h2 id="cat-h">Catálogo de esta semana</h2><span>Semana del 2 al 7 de noviembre</span></div>
+    <div class="filters" role="group" aria-label="Filtrar productos">
+      <button type="button" data-f="todo" aria-pressed="true">Todo</button>
+      <button type="button" data-f="canasta" aria-pressed="false">Canastas</button>
+      <button type="button" data-f="casero" aria-pressed="false">Productos caseros</button>
+      <button type="button" data-f="fresco" aria-pressed="false">Frescos</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <aside class="slip" id="pedido" aria-labelledby="slip-h">
+    <div class="slip-head"><h2 id="slip-h">Tu pedido</h2><p>Se envía por WhatsApp a los jóvenes que manejan los pedidos</p></div>
+    <div class="slip-body">
+      <ul class="lines" id="lines"></ul>
+      <p class="empty" id="empty">Todavía no has agregado productos.</p>
+      <fieldset>
+        <legend>Entrega</legend>
+        <label class="opt"><input type="radio" name="entrega" id="e-punto" value="punto" checked><span>Sábado, punto fijo<small>Parque principal de Ocaña, 8 a. m. a 12 m. Sin costo.</small></span></label>
+        <label class="opt"><input type="radio" name="entrega" id="e-domi" value="domi"><span>Sábado, domicilio cercano<small>Barrios cercanos al centro. + $3.000</small></span></label>
+        <label class="opt"><input type="radio" name="entrega" id="e-negocio" value="negocio"><span>Miércoles, solo tiendas y restaurantes<small>Segundo día de entrega en prueba durante el piloto.</small></span></label>
+      </fieldset>
+      <label class="f" for="nombre">Nombre<input id="nombre" autocomplete="name" placeholder="Ej.: Laura Pérez"></label>
+      <label class="f" for="barrio">Barrio o dirección<input id="barrio" placeholder="Ej.: Barrio El Carmen"></label>
+      <div class="total"><span>Total</span><b id="total">$0</b></div>
+      <a class="send" id="send" href="#" target="_blank" rel="noopener" aria-disabled="true">Enviar pedido por WhatsApp</a>
+      <pre class="msg" id="msg" aria-label="Mensaje que se enviará"></pre>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="copy" id="copy">Copiar mensaje</button><span class="note" id="copied" aria-live="polite"></span></div>
+      <p class="note">Prototipo: el botón abre WhatsApp con el mensaje escrito y tú eliges el contacto. En la versión real iría el número de la Canasta.</p>
+    </div>
+  </aside>
+</div></main>
+
+<div class="mobile-bar" aria-hidden="false"><span id="mb-text">Sin productos</span><a href="#pedido">Ver pedido</a></div>
+
+<section class="band" aria-labelledby="route-h"><div class="wrap">
+  <h2 id="route-h" style="font-size:24px">Cómo funciona cada semana</h2>
+  <div class="route" id="route">
+    <div class="step" data-days="1,2"><span class="day">Lunes</span><b>Se publica el catálogo</b><span>Las familias reportan qué tendrán listo y los jóvenes actualizan productos y precios.</span><span class="who">Jóvenes y familias</span></div>
+    <div class="step" data-days="3"><span class="day">Miércoles</span><b>Se cierran los pedidos</b><span>Se suma cuánto hay que cosechar y transformar, y se reparte entre las familias.</span><span class="who">Jóvenes</span></div>
+    <div class="step" data-days="4,5"><span class="day">Jueves y viernes</span><b>Cosecha y transformación</b><span>Solo se prepara lo vendido. Las canastas se arman en el salón comunal.</span><span class="who">Familias y mujeres transformadoras</span></div>
+    <div class="step" data-days="6"><span class="day">Sábado</span><b>Un solo viaje a Ocaña</b><span>Entrega en el punto fijo y a domicilio. Se registra cuánto le corresponde a cada familia.</span><span class="who">Comité de entrega por turnos</span></div>
+  </div>
+  <div class="compare">
+    <div><h3>Antes</h3><p>Cada familia viaja sola, vende en fresco al intermediario y al precio que él pone. Lo que no se vende se pierde.</p></div>
+    <div><h3>Con la Canasta</h3><p>Venta directa y anticipada, producto transformado con más valor, un solo transporte compartido y menos pérdida.</p></div>
+  </div>
+</div></section>
+
+<section class="two"><div class="wrap">
+  <div>
+    <h2 style="font-size:24px">La etiqueta de cada frasco</h2>
+    <p class="meta" style="font-size:15px;margin:6px 0 0">Misma receta base y misma etiqueta para todas las familias. Cambia el producto para verla.</p>
+    <div class="label" aria-live="polite">
+      <span class="brand">CANASTA CAMPESINA · EL PROGRESO</span>
+      <span class="pname" id="l-name">Mermelada de mora</span>
+      <span class="meta" id="l-size">250 g · Sin conservantes artificiales</span>
+      <span style="font-size:13px;font-weight:700">Registro sanitario: en trámite</span>
+      <hr>
+      <span style="font-size:14px">Hecha por <b style="color:var(--monte)" id="l-fam">Familia Quintero</b></span>
+      <span class="meta">Lote N.º 045 · Vence: 30/01/2027</span>
+      <div class="grid2"><span>Escanea y conoce la historia de la familia y de la vereda</span><div class="qr" role="img" aria-label="Código QR de ejemplo"></div></div>
+      <label class="meta" for="l-pick">Ver etiqueta de:
+        <select id="l-pick"></select></label>
+    </div>
+  </div>
+  <div>
+    <h2 style="font-size:24px">Lo que cambiamos por la encuesta</h2>
+    <p class="meta" style="font-size:15px;margin:6px 0 0">Encuesta en Google Forms del 28 de octubre de 2026, 11 respuestas.</p>
+    <ul class="changes">
+      <li><span class="stat">73%</span><p>dijo que el <b>registro sanitario</b> le da confianza. Ahora aparece en la etiqueta y el trámite es prioridad del primer mes.</p></li>
+      <li><span class="stat">55%</span><p>pagaría entre <b>$35.000 y $45.000</b>. La canasta familiar bajó a $40.000 y agregamos una canasta pequeña.</p></li>
+      <li><span class="stat">73%</span><p>acepta <b>pedir con anticipación</b> y recibir un día fijo. Por el pedido de un negocio, probamos un segundo día para tiendas y restaurantes.</p></li>
+      <li><span class="stat">1 productor</span><p>pidió <b>más variedad</b>. El contenido de la canasta cambia cada semana según lo que reporten las familias.</p></li>
+    </ul>
+  </div>
+</div></section>
+
+<footer><div class="wrap">Prototipo académico de la propuesta de innovación social · Curso Institucional III, Gestión Solidaria · Universidad Cooperativa de Colombia. Los nombres de familias, lotes y fechas son de ejemplo.</div></footer>
+
+<script>
+const ICON={
+ canasta:'<svg viewBox="0 0 120 100" aria-hidden="true"><circle cx="40" cy="38" r="16" fill="#7a2e5c"/><circle cx="62" cy="34" r="14" fill="#c8402e"/><circle cx="82" cy="40" r="13" fill="#e3a72f"/><path d="M14 46h92l-10 44H24z" fill="#a8743a"/><path d="M20 58h80M23 70h74M26 82h68" stroke="#7c5226" stroke-width="3"/><path d="M30 46q30-44 60 0" fill="none" stroke="#7c5226" stroke-width="5"/></svg>',
+ frasco:(c)=>`<svg viewBox="0 0 80 100" aria-hidden="true"><rect x="16" y="6" width="48" height="14" rx="3" fill="#b5452f"/><rect x="10" y="18" width="60" height="78" rx="12" fill="${c}"/><rect x="16" y="40" width="48" height="34" rx="4" fill="#fbf6ea" stroke="#2f5d34" stroke-width="2"/><rect x="22" y="50" width="36" height="5" rx="2" fill="#7a2e5c"/><rect x="26" y="60" width="28" height="4" rx="2" fill="#9aa08e"/></svg>`,
+ cebolla:'<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8c4 14 2 18 0 22" stroke="#2f5d34" stroke-width="5" fill="none"/><path d="M50 26c26 8 36 30 30 50-6 18-54 18-60 0-6-20 4-42 30-50z" fill="#7a2e5c"/><path d="M50 30c-6 20-6 40 0 58M50 30c6 20 6 40 0 58" stroke="#5a1f43" stroke-width="2" fill="none"/></svg>'
+};
+const P=[
+ {id:'cf',cat:'canasta',name:'Canasta familiar',price:40000,art:ICON.canasta,meta:'Para 4 personas, una semana',items:['Cebolla ocañera 2 lb','Tomate 2 lb','Ahuyama y frutas de cosecha','1 producto casero a elección'],fam:'Varias familias'},
+ {id:'cp',cat:'canasta',name:'Canasta pequeña',price:25000,art:ICON.canasta,meta:'Para 1 o 2 personas',items:['Cebolla ocañera 1 lb','Tomate 1 lb','Frutas de cosecha'],fam:'Varias familias'},
+ {id:'mm',cat:'casero',name:'Mermelada de mora',price:12000,art:ICON.frasco('#8e2a3a'),meta:'Frasco 250 g',fam:'Familia Quintero',label:'250 g · Sin conservantes artificiales'},
+ {id:'mg',cat:'casero',name:'Mermelada de guayaba',price:12000,art:ICON.frasco('#c9566a'),meta:'Frasco 250 g',fam:'Familia Pacheco',label:'250 g · Sin conservantes artificiales'},
+ {id:'en',cat:'casero',name:'Encurtido de cebolla y ají',price:10000,art:ICON.frasco('#b5452f'),meta:'Frasco 300 g',fam:'Familia Navarro',label:'300 g · Receta tradicional de la vereda'},
+ {id:'ce',cat:'fresco',name:'Cebolla ocañera',price:8000,art:ICON.cebolla,meta:'Bolsa de 3 lb, recién cosechada',fam:'Familia Pacheco'}
+];
+const fmt=n=>'$'+n.toLocaleString('es-CO');
+const qty={cf:1,mm:2};
+let filter='todo';
+
+function renderGrid(){
+  const g=document.getElementById('grid'); g.innerHTML='';
+  P.filter(p=>filter==='todo'||p.cat===filter).forEach(p=>{
+    const q=qty[p.id]||0;
+    const c=document.createElement('article'); c.className='card';
+    c.innerHTML=`<div class="art">${p.art}</div>
+      <div><h3>${p.name}</h3><div class="meta">${p.meta}</div></div>
+      ${p.items?`<ul class="contents">${p.items.map(i=>`<li>${i}</li>`).join('')}</ul>`:''}
+      <div class="fam">${p.fam}</div>
+      <div class="row"><span class="price">${fmt(p.price)}</span>
+      ${q?`<div class="stepper"><button type="button" aria-label="Quitar uno de ${p.name}" data-d="-1" data-id="${p.id}">−</button><output aria-live="polite">${q}</output><button type="button" aria-label="Agregar uno de ${p.name}" data-d="1" data-id="${p.id}">+</button></div>`
+        :`<button type="button" class="add" data-d="1" data-id="${p.id}">Agregar</button>`}</div>`;
+    g.appendChild(c);
+  });
+}
+function entrega(){return document.querySelector('input[name="entrega"]:checked').value}
+function render(){
+  renderGrid();
+  const lines=document.getElementById('lines'); lines.innerHTML='';
+  let sub=0, n=0;
+  P.forEach(p=>{const q=qty[p.id]||0; if(!q)return; sub+=q*p.price; n+=q;
+    const li=document.createElement('li'); li.innerHTML=`<span>${q} × ${p.name}</span><span>${fmt(q*p.price)}</span>`; lines.appendChild(li);});
+  const e=entrega(); const dom=e==='domi'&&n?3000:0;
+  if(dom){const li=document.createElement('li'); li.innerHTML=`<span>Domicilio</span><span>${fmt(dom)}</span>`; lines.appendChild(li);}
+  const total=sub+dom;
+  document.getElementById('empty').hidden=n>0;
+  document.getElementById('total').textContent=fmt(total);
+  document.getElementById('mb-text').textContent=n?`${n} producto${n>1?'s':''} · ${fmt(total)}`:'Sin productos';
+  const nombre=document.getElementById('nombre').value.trim(), barrio=document.getElementById('barrio').value.trim();
+  const when={punto:'el sábado en el punto fijo del parque',domi:'el sábado a domicilio',negocio:'el miércoles (entrega para negocio)'}[e];
+  const msg=n?`Hola, Canasta Campesina El Progreso. Quiero hacer este pedido:\n${P.filter(p=>qty[p.id]).map(p=>`• ${qty[p.id]} × ${p.name} (${fmt(qty[p.id]*p.price)})`).join('\n')}${dom?`\n• Domicilio (${fmt(dom)})`:''}\nTotal: ${fmt(total)}\nEntrega: ${when}\nNombre: ${nombre||'—'}\nBarrio: ${barrio||'—'}`:'Agrega productos para ver el mensaje del pedido.';
+  document.getElementById('msg').textContent=msg;
+  const s=document.getElementById('send');
+  s.href=n?'https://wa.me/?text='+encodeURIComponent(msg):'#';
+  s.setAttribute('aria-disabled',n?'false':'true');
+}
+document.getElementById('grid').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-id]'); if(!b)return;
+  const id=b.dataset.id; qty[id]=Math.max(0,(qty[id]||0)+Number(b.dataset.d)); if(!qty[id])delete qty[id]; render();
+});
+document.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{
+  filter=b.dataset.f; document.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); renderGrid();
+}));
+document.querySelectorAll('input[name="entrega"],#nombre,#barrio').forEach(i=>i.addEventListener('input',render));
+document.getElementById('copy').addEventListener('click',()=>{
+  const t=document.getElementById('msg').textContent, out=document.getElementById('copied');
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('msg'));const s=getSelection();s.removeAllRanges();s.addRange(r);out.textContent='Texto seleccionado: cópialo con Ctrl+C.'};
+  try{navigator.clipboard.writeText(t).then(()=>out.textContent='Mensaje copiado.',fallback)}catch(err){fallback()}
+});
+// Label picker
+const pick=document.getElementById('l-pick');
+P.filter(p=>p.cat==='casero').forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;pick.appendChild(o)});
+pick.addEventListener('change',()=>{const p=P.find(x=>x.id===pick.value);
+  document.getElementById('l-name').textContent=p.name;document.getElementById('l-size').textContent=p.label;document.getElementById('l-fam').textContent=p.fam;});
+// Highlight today's step
+const d=new Date().getDay();
+document.querySelectorAll('.step').forEach(s=>{if(s.dataset.days.split(',').map(Number).includes(d)){s.classList.add('now');const t=document.createElement('span');t.className='now-tag';t.textContent='Hoy';s.prepend(t)}});
+render();
+</script>
+
+</body>
+</html>
